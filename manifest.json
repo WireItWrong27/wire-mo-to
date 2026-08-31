@@ -1,0 +1,10 @@
+{
+  "name": "Wire Mo 'To",
+  "short_name": "WireMoTo",
+  "description": "Live wiring help for school electronics projects",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0F3D2E",
+  "theme_color": "#0F3D2E",
+  "icons": []
+}
