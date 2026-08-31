@@ -192,7 +192,18 @@
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
     gap:10px;
-    margin-bottom:36px;
+    margin-bottom:8px;
+  }
+  .module-category{margin-bottom:26px;}
+  .cat-label{
+    font-family:var(--mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--copper-light);
+    margin-bottom:10px;
+    padding-bottom:6px;
+    border-bottom:1px dashed rgba(234,243,238,0.15);
   }
   .chip{
     font-family:var(--mono);
@@ -412,8 +423,12 @@
     background:none;border:none;color:var(--rail-red);cursor:pointer;
     font-size:14px;line-height:1;padding:0;
   }
-  .add-row{display:flex;gap:8px;}
-  .add-row input{flex:1;padding:10px 12px;font-size:14px;}
+  .add-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .add-row input{flex:1;min-width:140px;padding:10px 12px;font-size:14px;}
+  .add-row select{
+    padding:10px 12px;font-size:13px;font-family:var(--mono);
+    background:var(--cream);color:var(--board-dark);border:none;border-radius:6px;
+  }
   .add-row button{white-space:nowrap;}
   .price-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .price-inputs label{
@@ -531,7 +546,7 @@
 
   <div class="builder">
     <div>
-      <div class="picker-grid" id="moduleGrid"></div>
+      <div id="moduleGrid"></div>
 
       <label class="field-label" for="projectDesc">What do you want to build?</label>
       <textarea id="projectDesc" rows="4" placeholder="E.g. I want to build a water level indicator with a buzzer alarm for when the tank is full."></textarea>
@@ -612,6 +627,14 @@
         <div class="admin-module-list" id="adminModuleList"></div>
         <div class="add-row">
           <input type="text" id="newModuleInput" placeholder="e.g. Servo Motor">
+          <select id="newModuleCategory">
+            <option value="Microcontrollers">Microcontrollers</option>
+            <option value="Sensors">Sensors</option>
+            <option value="Displays">Displays</option>
+            <option value="Inputs">Inputs</option>
+            <option value="Outputs">Outputs</option>
+            <option value="Other">Other</option>
+          </select>
           <button class="btn btn-ghost" id="addModuleBtn">+ Add</button>
         </div>
       </div>
@@ -669,9 +692,7 @@
 // =====================================================================
 // FIREBASE CONFIG — replace with YOUR project's config (see README_DEPLOY.md)
 // =====================================================================
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE",
   authDomain: "wire-mo-to.firebaseapp.com",
   projectId: "wire-mo-to",
@@ -679,6 +700,7 @@
   messagingSenderId: "663637334644",
   appId: "1:663637334644:web:4eb3edc92a3e7c3381cf21"
 };
+
 const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
 
 let db = null;
@@ -693,14 +715,55 @@ if (FIREBASE_CONFIGURED) {
   }
 }
 
+const CATEGORY_ORDER = ["Microcontrollers", "Sensors", "Displays", "Inputs", "Outputs", "Other"];
+
 const DEFAULT_MODULES = [
-  "ESP32","Wemos D1 Mini","Arduino Uno","Arduino Nano","STM32","ESP8266",
-  "IR Sensor","LDR Sensor","Ultrasonic Sensor","Waterproof Ultrasonic","DHT22",
-  "LCD 16x2","LCD 20x4","Vibration Sensor","SSR Relay","4-Channel Relay",
-  "DC Motor + Wheels","L298N Driver","LED","Coin Acceptor","Coin Hopper",
-  "RFID Reader","ESC","Brushless Motor","GPS Module","Smoke Sensor",
-  "Transceiver (HC-12/APC220)","HX711 + Load Cell","MPU6050","Buzzer","PIR Sensor"
+  { name: "ESP32", category: "Microcontrollers" },
+  { name: "Wemos D1 Mini", category: "Microcontrollers" },
+  { name: "Arduino Uno", category: "Microcontrollers" },
+  { name: "Arduino Nano", category: "Microcontrollers" },
+  { name: "STM32", category: "Microcontrollers" },
+  { name: "ESP8266", category: "Microcontrollers" },
+
+  { name: "IR Sensor", category: "Sensors" },
+  { name: "LDR Sensor", category: "Sensors" },
+  { name: "Ultrasonic Sensor", category: "Sensors" },
+  { name: "Waterproof Ultrasonic", category: "Sensors" },
+  { name: "DHT22", category: "Sensors" },
+  { name: "Vibration Sensor", category: "Sensors" },
+  { name: "PIR Sensor", category: "Sensors" },
+  { name: "MPU6050", category: "Sensors" },
+  { name: "Smoke Sensor", category: "Sensors" },
+  { name: "HX711 + Load Cell", category: "Sensors" },
+
+  { name: "LCD 16x2", category: "Displays" },
+  { name: "LCD 20x4", category: "Displays" },
+  { name: "OLED Display", category: "Displays" },
+
+  { name: "Potentiometer", category: "Inputs" },
+  { name: "Push Button", category: "Inputs" },
+
+  { name: "Buzzer", category: "Outputs" },
+  { name: "LED", category: "Outputs" },
+  { name: "SSR Relay", category: "Outputs" },
+  { name: "4-Channel Relay", category: "Outputs" },
+  { name: "DC Motor + Wheels", category: "Outputs" },
+  { name: "L298N Driver", category: "Outputs" },
+  { name: "ESC", category: "Outputs" },
+  { name: "Brushless Motor", category: "Outputs" },
+
+  { name: "RFID Reader", category: "Other" },
+  { name: "Coin Acceptor", category: "Other" },
+  { name: "Coin Hopper", category: "Other" },
+  { name: "GPS Module", category: "Other" },
+  { name: "Transceiver (HC-12/APC220)", category: "Other" }
 ];
+
+// Backward compatibility: older saved data may just be an array of plain
+// strings (before categories existed). This upgrades it automatically.
+function normalizeModules(list){
+  return (list || []).map(m => (typeof m === 'string') ? { name: m, category: 'Other' } : m);
+}
 const DEFAULT_PRICING = { base: 79, extra: 10, code: 40 };
 const DEFAULT_PROJECTS = [
   { name: "Water Level Indicator", description: "A buzzer sounds when the water tank is almost full.", tags: ["Ultrasonic","Buzzer","Arduino Uno"], price: "~₱79–99" },
@@ -730,7 +793,7 @@ function subscribeToData(){
   }
   db.collection('config').doc('siteData').onSnapshot((docSnap) => {
     const data = docSnap.exists ? docSnap.data() : {};
-    currentModules = (data.modules && data.modules.length) ? data.modules : [...DEFAULT_MODULES];
+    currentModules = normalizeModules((data.modules && data.modules.length) ? data.modules : DEFAULT_MODULES);
     currentPricing = data.pricing || {...DEFAULT_PRICING};
     currentProjects = (data.projects && data.projects.length) ? data.projects : [...DEFAULT_PROJECTS];
     finishDataLoad();
@@ -769,19 +832,51 @@ function saveToFirestore(){
 // ---------------- MAIN PAGE RENDERING ----------------
 const grid = document.getElementById('moduleGrid');
 
+function groupByCategory(list){
+  const groups = {};
+  CATEGORY_ORDER.forEach(cat => groups[cat] = []);
+  list.forEach(item => {
+    const cat = CATEGORY_ORDER.includes(item.category) ? item.category : 'Other';
+    groups[cat].push(item);
+  });
+  return groups;
+}
+
 function renderModuleGrid(){
   grid.innerHTML = '';
-  currentModules.forEach(name => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip' + (selected.has(name) ? ' selected' : '');
-    chip.innerHTML = `<span class="led-dot"></span>${escapeHtml(name)}`;
-    chip.addEventListener('click', () => {
-      if (selected.has(name)) { selected.delete(name); chip.classList.remove('selected'); }
-      else { selected.add(name); chip.classList.add('selected'); }
-      updateSummary();
+  const groups = groupByCategory(currentModules);
+
+  CATEGORY_ORDER.forEach(cat => {
+    const items = groups[cat];
+    if (!items || items.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'module-category';
+
+    const label = document.createElement('div');
+    label.className = 'cat-label';
+    label.textContent = cat;
+    section.appendChild(label);
+
+    const catGrid = document.createElement('div');
+    catGrid.className = 'picker-grid';
+
+    items.forEach(item => {
+      const name = item.name;
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (selected.has(name) ? ' selected' : '');
+      chip.innerHTML = `<span class="led-dot"></span>${escapeHtml(name)}`;
+      chip.addEventListener('click', () => {
+        if (selected.has(name)) { selected.delete(name); chip.classList.remove('selected'); }
+        else { selected.add(name); chip.classList.add('selected'); }
+        updateSummary();
+      });
+      catGrid.appendChild(chip);
     });
-    grid.appendChild(chip);
+
+    section.appendChild(catGrid);
+    grid.appendChild(section);
   });
 }
 
@@ -930,15 +1025,34 @@ document.getElementById('adminLogoutBtn').addEventListener('click', () => { if (
 
 function renderAdminModuleList(){
   adminModuleList.innerHTML = '';
-  currentModules.forEach((name) => {
-    const tag = document.createElement('span');
-    tag.className = 'tag-del';
-    tag.innerHTML = `${escapeHtml(name)} <button aria-label="Remove ${escapeHtml(name)}">✕</button>`;
-    tag.querySelector('button').addEventListener('click', () => {
-      currentModules = currentModules.filter(m => m !== name);
-      renderAdminModuleList();
+  const groups = groupByCategory(currentModules);
+  CATEGORY_ORDER.forEach(cat => {
+    const items = groups[cat];
+    if (!items || items.length === 0) return;
+
+    const catHeader = document.createElement('div');
+    catHeader.className = 'cat-label';
+    catHeader.style.marginTop = '14px';
+    catHeader.textContent = cat;
+    adminModuleList.appendChild(catHeader);
+
+    const rowWrap = document.createElement('div');
+    rowWrap.style.display = 'flex';
+    rowWrap.style.flexWrap = 'wrap';
+    rowWrap.style.gap = '8px';
+    rowWrap.style.marginBottom = '10px';
+
+    items.forEach(item => {
+      const tag = document.createElement('span');
+      tag.className = 'tag-del';
+      tag.innerHTML = `${escapeHtml(item.name)} <button aria-label="Remove ${escapeHtml(item.name)}">✕</button>`;
+      tag.querySelector('button').addEventListener('click', () => {
+        currentModules = currentModules.filter(m => m !== item);
+        renderAdminModuleList();
+      });
+      rowWrap.appendChild(tag);
     });
-    adminModuleList.appendChild(tag);
+    adminModuleList.appendChild(rowWrap);
   });
 }
 
@@ -950,9 +1064,10 @@ function fillPricingInputs(){
 
 document.getElementById('addModuleBtn').addEventListener('click', () => {
   const name = newModuleInput.value.trim();
+  const category = document.getElementById('newModuleCategory').value;
   if (!name) return;
-  if (currentModules.includes(name)) { newModuleInput.value = ''; return; }
-  currentModules.push(name);
+  if (currentModules.some(m => m.name === name)) { newModuleInput.value = ''; return; }
+  currentModules.push({ name, category });
   newModuleInput.value = '';
   renderAdminModuleList();
 });
@@ -1054,7 +1169,7 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   reader.onload = (ev) => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (Array.isArray(data.modules)) currentModules = data.modules;
+      if (Array.isArray(data.modules)) currentModules = normalizeModules(data.modules);
       if (data.pricing) currentPricing = { ...DEFAULT_PRICING, ...data.pricing };
       if (Array.isArray(data.projects)) currentProjects = data.projects;
       renderAdminModuleList();
