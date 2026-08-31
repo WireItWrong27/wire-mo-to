@@ -669,16 +669,25 @@
 // =====================================================================
 // FIREBASE CONFIG — replace with YOUR project's config (see README_DEPLOY.md)
 // =====================================================================
-  import { initializeApp } from "firebase/app";
-const firebaseConfig = {
-  apiKey: "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE",
-  authDomain: "wire-mo-to.firebaseapp.com",
-  projectId: "wire-mo-to",
-  storageBucket: "wire-mo-to.firebasestorage.app",
-  messagingSenderId: "663637334644",
-  appId: "1:663637334644:web:4eb3edc92a3e7c3381cf21"
-};
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE",
+    authDomain: "wire-mo-to.firebaseapp.com",
+    projectId: "wire-mo-to",
+    storageBucket: "wire-mo-to.firebasestorage.app",
+    messagingSenderId: "663637334644",
+    appId: "1:663637334644:web:4eb3edc92a3e7c3381cf21"
+  };
+
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
+
 const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE";
 
 let db = null;
@@ -1072,6 +1081,7 @@ document.getElementById('importFile').addEventListener('change', (e) => {
 // ---------------- INIT ----------------
 subscribeToData();
 </script>
+  </script>
 
 </body>
 </html>
