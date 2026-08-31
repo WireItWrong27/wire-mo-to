@@ -669,6 +669,7 @@
 // =====================================================================
 // FIREBASE CONFIG — replace with YOUR project's config (see README_DEPLOY.md)
 // =====================================================================
+  import { initializeApp } from "firebase/app";
 const firebaseConfig = {
   apiKey: "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE",
   authDomain: "wire-mo-to.firebaseapp.com",
@@ -677,6 +678,7 @@ const firebaseConfig = {
   messagingSenderId: "663637334644",
   appId: "1:663637334644:web:4eb3edc92a3e7c3381cf21"
 };
+  const app = initializeApp(firebaseConfig);
 const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "AIzaSyDPbwYXxwbcluba7IEcLe6Th2gS8sh8UZE";
 
 let db = null;
